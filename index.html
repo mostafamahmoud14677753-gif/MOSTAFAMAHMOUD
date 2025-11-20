@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quiz Spark</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800&display=swap');
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Inter', sans-serif;
+    }
+
+    body {
+      background-color: #ffffff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      flex-direction: column;
+      text-align: center;
+      color: #1f2937;
+    }
+
+    /* Logo */
+    .logo {
+      position: absolute;
+      top: 25px;
+      left: 40px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 28px;
+      font-weight: 700;
+      color: black;
+    }
+
+    .logo img {
+      width: 68px;
+      height: 68px;
+    }
+
+    /* Header */
+    header {
+      position: absolute;
+      top: 40px;
+      right: 40px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    header input {
+      padding: 8px 12px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 14px;
+      outline: none;
+      transition: 0.2s;
+    }
+
+    header input:focus {
+      border-color: #157531;
+    }
+
+    header button {
+      background-color: #1b8f3e;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: 500;
+      transition: background-color 0.3s;
+    }
+
+    header button:hover {
+      background-color: #157531;
+    }
+
+    /* Main content */
+    .container h1 {
+      font-size: 48px;
+      font-weight: 800;
+      margin-bottom: 10px;
+      color: #000;
+    }
+
+    .container p {
+      font-size: 18px;
+      color: #6b7280;
+      margin-bottom: 25px;
+    }
+
+    .start-btn {
+      background-color: #1b8f3e;
+      color: white;
+      padding: 14px 30px;
+      border: none;
+      border-radius: 8px;
+      font-size: 18px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    .start-btn:hover {
+      background-color: #157531;
+    }
+
+    /* Message style */
+    #message {
+      position: absolute;
+      top: 90px;
+      right: 40px;
+      font-size: 14px;
+      color: red;
+      font-weight: 500;
+    }
+
+    #chas {
+      width: 200px;
+      height: 200px;
+      max-width: 80%;
+      margin-top: 100px;
+    }
+
+    /* ✅ تحسين المديا بدون أي تغيير في التصميم */
+   
+    /* تحسين المديا بدون تغيير التصميم */
+@media (max-width: 900px) {
+  body {
+    text-align: center;
+  }
+  .container h1 {
+    font-size: 38px;
+  }
+  .container p {
+    font-size: 16px;
+  }
+  header {
+    position: static;
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 0; /* رفعها أكثر */
+  }
+  .logo {
+    position: static;
+    justify-content: center;
+    margin-top: -200px; /* أقل مسافة من تحت */
+    font-size: 22px;
+  }
+  .logo img {
+    width: 55px;
+    height: 55px;
+  }
+  #message {
+    position: static;
+    margin-bottom: 2px;
+    font-size: 13px;
+  }
+  #chas {
+    margin-top: 10px; /* رفع الصورة أكثر */
+    width: 160px;
+    height: 160px;
+  }
+}
+
+@media (max-width: 600px) {
+  body {
+    padding: 20px;
+    text-align: center;
+  }
+  .container h1 {
+    font-size: 30px;
+  }
+  .container p {
+    font-size: 15px;
+  }
+  header {
+    position: static;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 0; /* رفعها أكثر */
+  }
+  #message {
+    position: static;
+    margin-bottom: 2px;
+  }
+  .logo {
+    position: static;
+    justify-content: center;
+    margin-bottom: 5px; /* رفعها أكثر */
+  }
+  #chas {
+    width: 140px;
+    height: 140px;
+    margin-top: 5px; /* رفع الصورة */
+  }
+}
+
+
+
+  </style>
+</head>
+<body>
+
+  <div class="logo">
+    <img src="quizSpark_icon.png" alt="Quiz Icon">
+    Quiz<span style="color:#1b8f3e;">Arabic</span>
+  </div>
+
+  <header>
+    
+    <input type="password" id="passwordInput" placeholder="ادخل كلمة السر">
+     <button onclick="checkPassword()">Login</button>
+  </header>
+
+  <div id="message"></div>
+
+  <img src="quizSpark_icon.png" id="chas">
+
+  <div class="container">
+    <h1>Learn 10x <span style="color: #1b8f3e;">Faster!</span></h1>
+    <p>Unlock Your Potential with Personalized Quizzes</p>
+    <a href="index (2).html">
+      <button class="start-btn">Get Started Now!</button>
+    </a>
+  </div>
+
+  <script>
+    const PASSWORD = "CH1988";
+
+    function checkPassword() {
+      const input = document.getElementById("passwordInput").value.trim();
+      const message = document.getElementById("message");
+
+      if (input === PASSWORD) {
+        message.style.color = "green";
+        message.textContent = "✅ تم تسجيل الدخول بنجاح!";
+        setTimeout(() => {
+          window.location.href = "index (4).html"; 
+        }, 1000);
+      } else {
+        message.style.color = "red";
+        message.textContent = "❌ كلمة السر غير صحيحة!";
+      }
+    }
+  </script>
+
+</body>
+</html>

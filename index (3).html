@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quiz Arabic - الامتحان</title>
+  <style>
+    *{
+        font-family: 'Inter', sans-serif;
+    }
+    body {
+      font-family:'Inter',sans-serif;
+      background-color:#f3f4f6;
+      color:#111827;
+      text-align:center;
+      padding:60px;
+    }
+
+    .logo {
+      position:absolute;
+      top:25px;
+      left:40px;
+      display:flex;
+      align-items:center;
+      gap:8px;
+      font-size:28px;
+      font-weight:700;
+      color:black;
+    }
+
+    .logo img {
+      width:68px;
+      height:68px;
+    }
+
+    .quiz-box {
+      background:white;
+      border-radius:14px;
+      box-shadow:0 4px 10px rgba(0,0,0,0.1);
+      width:400px;
+      margin:120px auto;
+      padding:30px;
+      margin-bottom:10px;
+    }
+
+    .quiz-header {
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      margin-bottom:10px;
+    }
+
+    .question-number {
+      background:#166534;
+      color:white;
+      padding:8px 14px;
+      border-radius:8px;
+      font-weight:bold;
+      margin-bottom:-10px;
+    }
+
+    .timer {
+      font-size:18px;
+      color:#166534;
+      font-weight:bold;
+    }
+
+    .question {
+      font-size:20px;
+      margin-bottom:25px;
+    }
+
+    .option {
+      display:block;
+      background:#e5e7eb;
+      border:none;
+      padding:12px;
+      border-radius:8px;
+      width:100%;
+      margin-bottom:12px;
+      cursor:pointer;
+      font-size:16px;
+      transition:0.3s;
+    }
+
+    .option:hover {
+      background:#d1fae5;
+    }
+
+    .selected {
+      border:2px solid #16a34a;
+      background-color:#bbf7d0;
+    }
+
+    .submit-btn {
+      background-color:#16a34a;
+      color:white;
+      border:none;
+      padding:12px 24px;
+      font-size:16px;
+      border-radius:8px;
+      cursor:pointer;
+      margin-top:15px;
+      transition:0.3s;
+    }
+
+    .submit-btn:hover {
+      background-color:#15803d;
+    }
+
+    .result {
+      font-size:22px;
+      font-weight:600;
+      margin-top:20px;
+      color:#166534;
+    }
+
+    .back-btn {
+      position:absolute;
+      top:20px;
+      right:30px;
+      background-color:#d1d5db;
+      color:#111827;
+      border:none;
+      padding:8px 16px;
+      border-radius:8px;
+      cursor:pointer;
+      font-size:14px;
+      transition:0.3s;
+    }
+
+    .back-btn:hover {
+      background-color:#9ca3af;
+    }
+
+    @media (max-width: 600px) {
+      body {
+        padding:30px 10px;
+      }
+      .logo {
+        top:15px;
+        left:15px;
+        font-size:22px;
+      }
+      .logo img {
+        width:50px;
+        height:50px;
+      }
+      .quiz-box {
+        width:90%;
+        margin:100px auto 20px;
+        margin-right: -5PX;
+        padding:20px;
+      }
+      .question {
+        font-size:18px;
+      }
+      .option {
+        font-size:15px;
+        padding:10px;
+      }
+      .submit-btn {
+        font-size:15px;
+        padding:10px 20px;
+      }
+      .back-btn {
+        top:30Px;
+        right:15px;
+        padding:6px 14px;
+        font-size:13px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="logo">
+    <span style="color:#1b8f3e;">Arabic</span> Quiz
+    <img src="quizSpark_icon.png" alt="Quiz Icon">
+  </div>
+
+  <a href="index (2).html">
+    <button class="back-btn">⬅ رجوع</button>
+  </a>
+
+  <div class="quiz-box">
+    <div class="quiz-header">
+      <div class="question-number" id="qNum">1</div>
+      <div class="timer">⏱ <span id="time">90</span> ثانية</div>
+    </div>
+
+    <div class="question" id="question"></div>
+    <div id="options"></div>
+    <button class="submit-btn" id="nextBtn">السؤال التالي</button>
+    <button class="submit-btn" id="finishBtn" style="display:none;">تصحيح الامتحان</button>
+    <div class="result" id="result"></div>
+  </div>
+
+  <!-- 🔥 Firebase + Quiz Loader -->
+  <script type="module">
+
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAT8xzdPvVYaisR0yvChvuf2CoozGbBstg",
+      authDomain: "mos-b61ce.firebaseapp.com",
+      projectId: "mos-b61ce",
+      storageBucket: "mos-b61ce.firebasestorage.app",
+      messagingSenderId: "485893959642",
+      appId: "1:485893959642:web:893db757c7f6bd48f15ae3"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    let currentQuizId = localStorage.getItem("currentQuiz");
+    let quiz = null;
+
+    let index = 0, score = 0, wrong = 0, selected = null, time = 90, timer;
+
+    const qNum = document.getElementById("qNum");
+    const questionEl = document.getElementById("question");
+    const optionsEl = document.getElementById("options");
+    const timeEl = document.getElementById("time");
+    const resultEl = document.getElementById("result");
+    const nextBtn = document.getElementById("nextBtn");
+    const finishBtn = document.getElementById("finishBtn");
+
+    // ⭐ تحميل الامتحان من Firebase
+    async function loadQuiz(){
+      const snap = await getDoc(doc(db,"countie",currentQuizId));
+      if(!snap.exists()){
+        questionEl.textContent = "🚫 الامتحان غير موجود";
+        nextBtn.style.display="none";
+        return;
+      }
+      quiz = snap.data();
+      loadQuestion();
+    }
+
+    function loadQuestion(){
+      if(index >= quiz.questions.length){ showFinishButton(); return; }
+
+      const q = quiz.questions[index];
+      qNum.textContent = index + 1;
+      questionEl.textContent = q.question;
+
+      optionsEl.innerHTML = "";
+      q.options.forEach((opt,i)=>{
+        const btn = document.createElement("button");
+        btn.textContent = opt;
+        btn.className="option";
+        btn.onclick = ()=>selectOption(btn,i);
+        optionsEl.appendChild(btn);
+      });
+
+      resetTimer();
+    }
+
+    function selectOption(btn,i){
+      document.querySelectorAll(".option").forEach(b=>b.classList.remove("selected"));
+      btn.classList.add("selected");
+      selected = i;
+    }
+
+    function resetTimer(){
+      clearInterval(timer);
+      time = 90;
+      timeEl.textContent = time;
+      timer = setInterval(()=>{
+        time--;
+        timeEl.textContent=time;
+        if(time <= 0){ handleNext(); }
+      },1000);
+    }
+
+    function handleNext(){
+      clearInterval(timer);
+
+      const correct = quiz.questions[index].correct;
+      if(selected === correct){ score++; } else { wrong++; }
+
+      index++;
+      selected = null;
+
+      if(index >= quiz.questions.length){ showFinishButton(); }
+      else { loadQuestion(); }
+    }
+
+    function showFinishButton(){
+      clearInterval(timer);
+      questionEl.textContent = "انتهى الامتحان";
+      optionsEl.innerHTML="";
+      nextBtn.style.display="none";
+      finishBtn.style.display="inline-block";
+    }
+
+    function showResult(){
+      resultEl.innerHTML = `
+        ✅ عدد الإجابات الصحيحة: ${score}<br>
+        ❌ عدد الأخطاء: ${wrong}<br>
+        المجموع: ${score} من ${quiz.questions.length}
+      `;
+      finishBtn.style.display="none";
+    }
+
+    nextBtn.onclick = handleNext;
+    finishBtn.onclick = showResult;
+
+    loadQuiz();
+
+  </script>
+
+</body>
+</html>

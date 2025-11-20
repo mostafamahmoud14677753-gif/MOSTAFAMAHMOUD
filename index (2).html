@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="ar" >
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiz Arabic - لوحة التحكم</title>
+<style>
+      @media (max-width: 900px) {
+        #message {
+  font-size: 20px; /* حجم الخط */
+  font-weight: bold; /* سماكة الخط */
+  margin-top: 50px;
+  margin-left: 65px;
+  color: green; /* اللون */
+}
+  body { padding:20px; }
+  header { top: 20px; right: 20px; flex-wrap: wrap; gap: 8px; }
+  .logo { top: 20px; left: 20px; font-size: 22px; }
+  .logo img { width: 55px; height: 55px; }
+  #quizForm { width: 0%; margin: 120px auto 0; }
+  .cards { justify-content: center; margin-top: 120px; }
+      input {  width: 200px;padding:8px 12px; border:1px solid #ccc; border-radius:6px; font-size:14px; outline:none; margin-right:0px; }
+
+}
+
+@media (max-width: 600px) {
+  body { padding:15px; }
+  header {
+    position: static;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    margin-top: 80px;
+    margin-right: 30PX;
+  }
+  .logo {
+    position: static;
+    justify-content: center;
+    margin-bottom: 20px;
+    margin-left: 45PX;
+  }
+
+  
+  .cards {
+    flex-direction: column;
+    align-items: center;
+    margin-top: 60px;
+  }
+  .card {
+    width: 85%;
+  }
+  .card-top {
+    width: 91%;
+  }
+
+    #quizForm {
+    width: 90% !important;     /* يكبّر الفورم */
+  
+    transform: translateY(150px);   /* ينزله شوية كمان */
+  }
+
+  #questionsList .q-block {
+    width: 100%;
+  }
+}
+
+  
+
+
+body { font-family: 'Inter', sans-serif; background:#fff; color:#111827; padding:40px 60px; }
+.logo { position: absolute; top: 25px; left: 40px; display:flex; align-items:center; gap:8px; font-size:28px; font-weight:700; color:black; }
+.logo img { width:68px; height:68px; }
+
+header { position:absolute; top:40px; right:40px; display:flex; align-items:center; gap:10px; }
+header input { padding:8px 12px; border:1px solid #ccc; border-radius:6px; font-size:14px; outline:none; }
+header button { background-color:#1b8f3e; color:white; border:none; padding:10px 20px; border-radius:6px; cursor:pointer; font-size:16px; }
+
+#quizForm { display:none; margin-top:30px; border:1px solid #ccc; border-radius:10px; padding:20px; width:500px; background:#f9fafb; }
+#questionsList .q-block { border:1px solid #ccc; padding:8px; border-radius:6px; margin-bottom:10px; background:#fff; }
+
+.cards { display:flex; gap:20px; flex-wrap:wrap; margin-top: 150px; }
+.card { background:#fff; border:1px solid #e5e7eb; border-radius:12px; width:260px; box-shadow:0 2px 6px rgba(0,0,0,0.08); overflow:hidden; transition:0.3s; margin-top:40px; }
+.card-top { background-color:#166534; display:flex; justify-content:center; align-items:center; height:170px; position:relative; width:230px; border-radius:10px; margin-left:15px; margin-top:10px; }
+.card-top img { width:70px; height:70px; filter:brightness(0) invert(1); }
+.card-content { text-align:left; padding:15px 18px; }
+.card-content h3 { font-size:17px; font-weight:600; margin-bottom:6px; }
+.card-content p { color:#6b7280; font-size:14px; margin-bottom:15px; }
+.card-footer { display:flex; justify-content:space-between; align-items:center; padding:0 18px 15px; }
+.play-btn, .delete-btn { border:none; border-radius:50%; color:white; width:36px; height:36px; font-size:16px; cursor:pointer; display:flex; justify-content:center; align-items:center; transition:0.3s; }
+.play-btn { background-color:#15803d; }
+.delete-btn { background-color:#dc2626; }
+.play-btn:hover { background-color:#14532d; }
+.delete-btn:hover { background-color:#b91c1c; }
+</style>
+</head>
+<body>
+
+<div class="logo">
+  <img src="quizSpark_icon.png" alt="Quiz Icon">
+  Quiz<span style="color:#1b8f3e;">Arabic</span>
+</div>
+
+<header>
+  <input type="text" id="passwordInput" placeholder="ادخل كود الدخول">
+  <button id="loginBtn">Login</button>
+  <span id="message"></span>
+</header>
+
+<div id="quizForm">
+  <h3>إضافة كويز جديد</h3>
+  <label>اسم الكويز:</label>
+  <input type="text" id="quizTitle" placeholder="اكتب اسم الكويز">
+  <div id="questionsList"></div>
+  <button type="button" id="addQuestionBtn">➕ أضف سؤال جديد</button>
+  <button type="button" id="saveQuizBtn">💾 حفظ الكويز</button>
+</div>
+
+<div class="cards" id="cardsContainer"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+
+// 🔹 Firebase Config
+const firebaseConfig = {
+  apiKey: "AIzaSyAT8xzdPvVYaisR0yvChvuf2CoozGbBstg",
+  authDomain: "mos-b61ce.firebaseapp.com",
+  projectId: "mos-b61ce",
+  storageBucket: "mos-b61ce.firebasestorage.app",
+  messagingSenderId: "485893959642",
+  appId: "1:485893959642:web:893db757c7f6bd48f15ae3"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+const PASSWORD = "CH1988";
+let quizzes = [];
+
+const form = document.getElementById("quizForm");
+const message = document.getElementById("message");
+const passwordInput = document.getElementById("passwordInput");
+const addQuestionBtn = document.getElementById("addQuestionBtn");
+const saveQuizBtn = document.getElementById("saveQuizBtn");
+const cardsContainer = document.getElementById("cardsContainer");
+const questionsList = document.getElementById("questionsList");
+
+// ----- LOAD QUIZZES للجميع -----
+async function loadQuizzes() {
+    const snapshot = await getDocs(collection(db, "countie"));
+    quizzes = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    renderCards();
+}
+
+// ----- RENDER QUIZ CARDS -----
+function renderCards() {
+    cardsContainer.innerHTML = "";
+    quizzes.forEach(qz => {
+        const card = document.createElement("div");
+        card.className = "card";
+        card.innerHTML = `
+          <div class="card-top"><img src="quizSpark_icon.png"></div>
+          <div class="card-content"><h3>${qz.title}</h3><p>عدد الأسئلة: ${qz.questions.length}</p></div>
+          <div class="card-footer">
+            <button class="play-btn" onclick="startQuiz('${qz.id}')">▶</button>
+            <button class="delete-btn" style="display:none;" onclick="deleteQuiz('${qz.id}')">🗑</button>
+          </div>
+        `;
+        cardsContainer.appendChild(card);
+    });
+}
+
+// ----- DELETE QUIZ واظهارها بس بعد الباس -----
+window.deleteQuiz = async function (id) {
+    if (confirm("هل انت متأكد من الحذف؟")) {
+        await deleteDoc(doc(db, "countie", id));
+        await loadQuizzes();
+    }
+};
+
+// ----- OPEN QUIZ -----
+window.startQuiz = function(id) {
+    localStorage.setItem("currentQuiz", id);
+    window.open("index (3).html", "_blank");
+};
+
+// ----- LOGIN لاظهار form الاضافة والحذف -----
+document.getElementById("loginBtn").addEventListener("click", () => {
+    if(passwordInput.value.trim() === PASSWORD){
+   
+        form.style.display = "block";
+
+        // أظهر أزرار الحذف بعد الدخول
+        document.querySelectorAll(".delete-btn").forEach(btn => btn.style.display = "flex");
+    } else {
+   
+    }
+});
+
+// ----- ADD QUESTION -----
+addQuestionBtn.addEventListener("click", () => {
+    const n = questionsList.children.length + 1;
+    const div = document.createElement("div");
+    div.className = "q-block";
+    div.innerHTML = `
+      <hr><strong>السؤال ${n}</strong>
+      <input type="text" placeholder="نص السؤال" class="q-text">
+      <input type="text" placeholder="الاختيار الأول" class="opt1">
+      <input type="text" placeholder="الاختيار الثاني" class="opt2">
+      <input type="text" placeholder="الاختيار الثالث" class="opt3">
+      <input type="text" placeholder="الاختيار الرابع" class="opt4">
+      <input type="number" min="1" max="4" placeholder="رقم الإجابة الصحيحة (1-4)" class="correct">
+    `;
+    questionsList.appendChild(div);
+});
+
+// ----- SAVE QUIZ -----
+saveQuizBtn.addEventListener("click", async () => {
+    const title = document.getElementById("quizTitle").value.trim();
+    if (!title) return alert("⚠ اكتب اسم الكويز");
+
+    const blocks = document.querySelectorAll(".q-block");
+    if (blocks.length === 0) return alert("⚠ أضف سؤال واحد على الأقل");
+
+    const questions = [];
+    for (const b of blocks) {
+        const q = b.querySelector(".q-text").value.trim();
+        const opts = [
+            b.querySelector(".opt1").value.trim(),
+            b.querySelector(".opt2").value.trim(),
+            b.querySelector(".opt3").value.trim(),
+            b.querySelector(".opt4").value.trim()
+        ];
+        const correct = parseInt(b.querySelector(".correct").value) - 1;
+        if (!q || opts.some(o => o === "") || isNaN(correct) || correct < 0 || correct > 3) {
+            return alert("⚠ تأكد أن كل الحقول ممتلئة ورقم الإجابة صحيح");
+        }
+        questions.push({ question: q, options: opts, correct });
+    }
+
+    await addDoc(collection(db, "countie"), { title, questions });
+    document.getElementById("quizTitle").value = "";
+    questionsList.innerHTML = "";
+    await loadQuizzes();
+    alert("✅ تم حفظ الكويز بنجاح!");
+});
+
+// ----- INITIAL LOAD -----
+loadQuizzes();
+</script>
+
+</body>
+</html>
